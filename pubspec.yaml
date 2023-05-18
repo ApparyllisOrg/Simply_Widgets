@@ -11,6 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_stripe: ^9.2.0
+  flutter_stripe_web: ^4.1.0
+  intl: ^0.18.1
   styled_widget: ^0.4.1
 
 dev_dependencies:
