@@ -43,6 +43,7 @@ class _HeroButtonState extends State<HeroButton> {
         onExit: (event) => onMouseExit(),
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
+          onTap: widget.onPressed,
           child: AnimatedContainer(
             padding: EdgeInsets.only(left: 80, right: 80, top: 20, bottom: 20),
             decoration: BoxDecoration(
