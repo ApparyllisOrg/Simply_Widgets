@@ -11,6 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_cache_manager: ^3.3.0
   flutter_markdown: ^0.6.14
   flutter_stripe: ^9.2.0
   flutter_stripe_web: ^4.1.0
