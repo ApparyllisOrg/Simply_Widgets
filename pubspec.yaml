@@ -11,9 +11,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_markdown: ^0.6.14
   flutter_stripe: ^9.2.0
   flutter_stripe_web: ^4.1.0
-  intl: ^0.18.1
+  intl: ^0.17.0
+  markdown: ^7.1.0
   styled_widget: ^0.4.1
 
 dev_dependencies:
