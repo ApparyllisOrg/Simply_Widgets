@@ -56,6 +56,7 @@ class TextChange {
 // TODO: Add replace support
 class MentionTextEditingController extends TextEditingController {
   MentionTextEditingController({
+    this.controllerToCopyTo,
     required this.mentionSyntaxes,
     required this.onSugggestionChanged,
     super.text,
@@ -65,6 +66,7 @@ class MentionTextEditingController extends TextEditingController {
 
   final List<MentionSyntax> mentionSyntaxes;
   final Function(String?) onSugggestionChanged;
+  TextEditingController? controllerToCopyTo;
 
   final List<_TextMention> cachedMentions = [];
 
@@ -223,6 +225,10 @@ class MentionTextEditingController extends TextEditingController {
     }
 
     _previousText = text;
+
+    if (controllerToCopyTo != null) {
+      controllerToCopyTo!.text = text;
+    }
   }
 
   bool isMentioning() => _mentionStartingIndex != null && _mentionLength != null && _mentionStartCharacter != null;
@@ -276,6 +282,7 @@ class MentionTextEditingController extends TextEditingController {
 
       if (change.type == TextChangeType.Removed) {
         if (isMentioning()) {
+          // TODO: Deleting the last character in text causes the last "removed" to be the last two characters
           _mentionLength = _mentionLength! - change.changedText.length;
           assert(_mentionLength! >= 0);
 
@@ -295,7 +302,7 @@ class MentionTextEditingController extends TextEditingController {
         final MentionSyntax syntax = mentionSyntaxes[i];
         if (change.changedText == syntax.startingCharacter) {
           _mentionStartingIndex = change.start;
-          _mentionLength = change.start + 1;
+          _mentionLength = 1;
           _mentionStartCharacter = syntax.startingCharacter;
           break;
         }
