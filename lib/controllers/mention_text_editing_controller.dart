@@ -5,6 +5,13 @@ import 'package:flutter/widgets.dart';
 
 bool _kDebugMentionTextController = kDebugMode && true;
 
+class MentionObject {
+  MentionObject({required this.id, required this.displayName, required this.avatarUrl});
+  final String id;
+  final String displayName;
+  final String avatarUrl;
+}
+
 class MentionSyntax {
   MentionSyntax({
     required this.regexpPattern,
