@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-
-bool _kDebugMentionTextController = kDebugMode && true;
+import 'package:simply_widgets/utils/string_utils.dart';
 
 // Mention object that store the id, display name and avatarurl of the mention
 // You can inherit from this to add your own custom data, should you need to
@@ -54,19 +53,6 @@ class _TextMention {
   final MentionSyntax syntax;
   int start;
   int end;
-}
-
-enum _TextChangeType { Added, Removed, Replaced }
-
-class TextChange {
-  TextChange({required this.type, required this.start, required this.end, required this.previous, required this.current, required this.changedText});
-
-  final _TextChangeType type;
-  final int start;
-  final int end;
-  final String previous;
-  final String current;
-  final String changedText;
 }
 
 // Text editing controller that can parse mentions
@@ -244,78 +230,10 @@ class MentionTextEditingController extends TextEditingController {
       return;
     }
 
-    int startDifference = 0;
-    int endDifference = 0;
+    TextChange? change = StringUtils.getDiffBetweenStrings(text, _previousText);
 
-    // TODO: Replace support
-
-    // If we grew
-    if (text.length > _previousText.length) {
-      for (int i = 0; i < text.length; ++i) {
-        if (_previousText.length - 1 >= i) {
-          if (text[i] != _previousText[i]) {
-            startDifference = i;
-            final String remainingText = text.substring(i, text.length);
-            final String remainingPreviousText = _previousText.substring(i, _previousText.length);
-            if (remainingText.endsWith(remainingPreviousText)) {
-              endDifference = startDifference + remainingText.indexOf(remainingPreviousText);
-              break;
-            } else {
-              endDifference = text.length;
-              break;
-            }
-          }
-        } else {
-          startDifference = i;
-          endDifference = text.length;
-          break;
-        }
-      }
-
-      final String changedText = text.substring(startDifference, endDifference);
-
-      if (_kDebugMentionTextController) {
-        print('Inserted [$changedText] starting at index $startDifference and ending at $endDifference');
-      }
-
-      _processTextChange(TextChange(
-          type: _TextChangeType.Added, start: startDifference, end: endDifference, previous: _previousText, current: text, changedText: changedText));
-    } else {
-      for (int i = 0; i < _previousText.length; ++i) {
-        if (text.length - 1 >= i) {
-          if (text[i] != _previousText[i]) {
-            startDifference = i;
-            final String remainingText = text.substring(i, text.length);
-            final String remainingPreviousText = _previousText.substring(i, _previousText.length);
-            if (remainingPreviousText.endsWith(remainingPreviousText)) {
-              final int startRemainingTextIndex = remainingPreviousText.indexOf(remainingText);
-              endDifference = startDifference + startRemainingTextIndex;
-              break;
-            } else {
-              endDifference = text.length;
-              break;
-            }
-          }
-        } else {
-          startDifference = i;
-          endDifference = _previousText.length;
-          break;
-        }
-      }
-
-      final String changedText = _previousText.substring(startDifference, endDifference);
-
-      if (_kDebugMentionTextController) {
-        print('Removed [$changedText] starting at index $startDifference and ending at $endDifference');
-      }
-
-      _processTextChange(TextChange(
-          type: _TextChangeType.Removed,
-          start: startDifference,
-          end: endDifference,
-          previous: _previousText,
-          current: text,
-          changedText: changedText));
+    if (change != null) {
+      _processTextChange(change);
     }
 
     _previousText = text;
@@ -374,7 +292,7 @@ class MentionTextEditingController extends TextEditingController {
       assert(_mentionLength != null);
 
       switch (change.type) {
-        case _TextChangeType.Added:
+        case TextChangeType.Added:
           {
             // Spaces are considered breakers for mentioning
             if (change.changedText == ' ') {
@@ -382,7 +300,7 @@ class MentionTextEditingController extends TextEditingController {
             }
           }
           break;
-        case _TextChangeType.Removed:
+        case TextChangeType.Removed:
           {
             // If we removed our at sign, chancel mentioning
             if (change.changedText == _mentionSyntax!.startingCharacter) {
@@ -390,7 +308,7 @@ class MentionTextEditingController extends TextEditingController {
             }
           }
           break;
-        case _TextChangeType.Replaced:
+        case TextChangeType.Replaced:
           {
             // If we're replacing text we cancel mentioning
             _cancelMentioning();
@@ -401,7 +319,7 @@ class MentionTextEditingController extends TextEditingController {
 
     // Change mention length and update suggestions
     {
-      if (change.type == _TextChangeType.Added) {
+      if (change.type == TextChangeType.Added) {
         if (isMentioning()) {
           _mentionLength = _mentionLength! + change.changedText.length;
           if (onSugggestionChanged != null) {
@@ -410,7 +328,7 @@ class MentionTextEditingController extends TextEditingController {
         }
       }
 
-      if (change.type == _TextChangeType.Removed) {
+      if (change.type == TextChangeType.Removed) {
         if (isMentioning()) {
           _mentionLength = _mentionLength! - change.changedText.length;
           assert(_mentionLength! >= 0);
@@ -430,7 +348,7 @@ class MentionTextEditingController extends TextEditingController {
     }
 
     // Check if we should start mentioning
-    if (!isMentioning() && change.type == _TextChangeType.Added) {
+    if (!isMentioning() && change.type == TextChangeType.Added) {
       for (int i = 0; i < mentionSyntaxes.length; ++i) {
         final MentionSyntax syntax = mentionSyntaxes[i];
         if (change.changedText == syntax.startingCharacter) {
@@ -453,12 +371,12 @@ class MentionTextEditingController extends TextEditingController {
       }
 
       // Not overlapping but we inserted text in front of metions so we need to shift them
-      if (mention.start > change.end && change.type == _TextChangeType.Added) {
+      if (mention.start > change.end && change.type == TextChangeType.Added) {
         mention.start += change.changedText.length;
         mention.end += change.changedText.length;
       }
       // Not overlapping but we removed text in front of metions so we need to shift them
-      if (mention.start < change.end && change.type == _TextChangeType.Removed) {
+      if (mention.start > change.end && change.type == TextChangeType.Removed) {
         mention.start -= change.changedText.length;
         mention.end -= change.changedText.length;
       }
