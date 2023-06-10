@@ -301,9 +301,13 @@ class MentionTextEditingController extends TextEditingController {
           if (difference.text == " ") {
             _cancelMentioning();
           } else {
-            _mentionLength = _mentionLength! + difference.text.length;
-            if (onSugggestionChanged != null) {
-              onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+            if (currentTextIndex <= _mentionStartingIndex! + _mentionLength! && currentTextIndex >= _mentionStartingIndex! + _mentionLength!) {
+              _mentionLength = _mentionLength! + difference.text.length;
+              if (onSugggestionChanged != null) {
+                onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+              }
+            } else {
+              _cancelMentioning();
             }
           }
         } else {
@@ -355,12 +359,7 @@ class MentionTextEditingController extends TextEditingController {
 
         // Check for overlaps
         if (!bGuardDeletion) {
-          if (difference.operation == DIFF_INSERT) {
-            if (rangeStart < mention.end && rangeEnd > mention.start) {
-              _cachedMentions.removeAt(x);
-              continue;
-            }
-          } else if (difference.operation == DIFF_DELETE) {
+          if (difference.operation != DIFF_EQUAL) {
             if (rangeStart < mention.end && rangeEnd > mention.start) {
               _cachedMentions.removeAt(x);
               continue;
