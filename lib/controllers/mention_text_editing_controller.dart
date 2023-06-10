@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'package:diff_match_patch/diff_match_patch.dart';
 import 'package:flutter/widgets.dart';
-import 'package:simply_widgets/utils/string_utils.dart';
 
 // Mention object that store the id, display name and avatarurl of the mention
 // You can inherit from this to add your own custom data, should you need to
+
+// Keep in copy with diff.dart
+const DIFF_DELETE = 1;
+const DIFF_INSERT = -1;
+const DIFF_EQUAL = 0;
+
 class MentionObject {
   MentionObject({required this.id, required this.displayName, required this.avatarUrl});
 
@@ -230,11 +236,7 @@ class MentionTextEditingController extends TextEditingController {
       return;
     }
 
-    TextChange? change = StringUtils.getDiffBetweenStrings(text, _previousText);
-
-    if (change != null) {
-      _processTextChange(change);
-    }
+    _processTextChange();
 
     _previousText = text;
 
@@ -243,7 +245,7 @@ class MentionTextEditingController extends TextEditingController {
     }
   }
 
-  bool guardMentionDeletion = false;
+  bool bGuardDeletion = false;
   void insertMention(MentionObject mention) {
     assert(isMentioning());
 
@@ -258,10 +260,9 @@ class MentionTextEditingController extends TextEditingController {
 
     _cancelMentioning();
 
-    guardMentionDeletion = true;
-    _previousText = text.replaceRange(mentionStart, mentionEnd, '$startChar${mention.displayName}');
-    text = _previousText;
-    guardMentionDeletion = false;
+    bGuardDeletion = true;
+    text = text.replaceRange(mentionStart, mentionEnd, '$startChar${mention.displayName}');
+    bGuardDeletion = false;
 
     selection = TextSelection.collapsed(offset: mentionVisibleTextEnd, affinity: TextAffinity.upstream);
 
@@ -286,99 +287,109 @@ class MentionTextEditingController extends TextEditingController {
     }
   }
 
-  void _processTextChange(TextChange change) {
-    // Check if we should stop mentioning
-    if (isMentioning()) {
-      assert(_mentionLength != null);
+  void _processTextChange() {
+    List<Diff> differences = diff(text, _previousText);
 
-      switch (change.type) {
-        case TextChangeType.Added:
-          {
-            // Spaces are considered breakers for mentioning
-            if (change.changedText == ' ') {
-              _cancelMentioning();
-            }
-          }
-          break;
-        case TextChangeType.Removed:
-          {
-            // If we removed our at sign, chancel mentioning
-            if (change.changedText == _mentionSyntax!.startingCharacter) {
-              _cancelMentioning();
-            }
-          }
-          break;
-        case TextChangeType.Replaced:
-          {
-            // If we're replacing text we cancel mentioning
+    int currentTextIndex = 0;
+
+    for (int i = 0; i < differences.length; ++i) {
+      Diff difference = differences[i];
+
+      if (difference.operation == DIFF_INSERT) {
+        if (isMentioning()) {
+          // Spaces are considered breakers for mentioning
+          if (difference.text == " ") {
             _cancelMentioning();
-          }
-          break;
-      }
-    }
-
-    // Change mention length and update suggestions
-    {
-      if (change.type == TextChangeType.Added) {
-        if (isMentioning()) {
-          _mentionLength = _mentionLength! + change.changedText.length;
-          if (onSugggestionChanged != null) {
-            onSugggestionChanged!(change.current.substring(_mentionStartingIndex! + 1, _mentionStartingIndex! + _mentionLength!));
-          }
-        }
-      }
-
-      if (change.type == TextChangeType.Removed) {
-        if (isMentioning()) {
-          _mentionLength = _mentionLength! - change.changedText.length;
-          assert(_mentionLength! >= 0);
-
-          // If we no longer have text after our mention sign then hide suggestions until we start typing again
-          if (_mentionLength == 1) {
-            if (onSugggestionChanged != null) {
-              onSugggestionChanged!(null);
-            }
           } else {
+            _mentionLength = _mentionLength! + difference.text.length;
             if (onSugggestionChanged != null) {
-              onSugggestionChanged!(change.current.substring(_mentionStartingIndex! + 1, _mentionStartingIndex! + _mentionLength!));
+              onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+            }
+          }
+        } else {
+          for (int i = 0; i < mentionSyntaxes.length; ++i) {
+            final MentionSyntax syntax = mentionSyntaxes[i];
+            if (difference.text == syntax.startingCharacter) {
+              _mentionStartingIndex = currentTextIndex;
+              _mentionLength = 1;
+              _mentionSyntax = syntax;
+              break;
             }
           }
         }
       }
-    }
 
-    // Check if we should start mentioning
-    if (!isMentioning() && change.type == TextChangeType.Added) {
-      for (int i = 0; i < mentionSyntaxes.length; ++i) {
-        final MentionSyntax syntax = mentionSyntaxes[i];
-        if (change.changedText == syntax.startingCharacter) {
-          _mentionStartingIndex = change.start;
-          _mentionLength = 1;
-          _mentionSyntax = syntax;
-          break;
+      if (difference.operation == DIFF_DELETE) {
+        if (isMentioning()) {
+          // If we removed our startingCharacter, chancel mentioning
+          if (difference.text == _mentionSyntax!.startingCharacter) {
+            _cancelMentioning();
+          } else {
+            _mentionLength = _mentionLength! - difference.text.length;
+            assert(_mentionLength! >= 0);
+
+            // If we no longer have text after our mention sign then hide suggestions until we start typing again
+            if (_mentionLength == 1) {
+              if (onSugggestionChanged != null) {
+                onSugggestionChanged!(null);
+              }
+            } else {
+              if (onSugggestionChanged != null) {
+                onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+              }
+            }
+          }
         }
       }
-    }
 
-    for (int i = _cachedMentions.length - 1; i >= 0; --i) {
-      final _TextMention mention = _cachedMentions[i];
+      int rangeStart = currentTextIndex;
+      int rangeEnd = currentTextIndex + difference.text.length;
 
-      // Check for overlaps
-      if (mention.start < change.end && mention.end > change.start) {
-        if (!guardMentionDeletion) {
-          _cachedMentions.removeAt(i);
+      // If we insert a character in a position then it should end the range on the last character, not after the last character
+      if (difference.operation != DIFF_DELETE) {
+        rangeEnd -= 1;
+      }
+
+      for (int x = _cachedMentions.length - 1; x >= 0; --x) {
+        final _TextMention mention = _cachedMentions[x];
+
+        // Check for overlaps
+        if (!bGuardDeletion) {
+          if (difference.operation == DIFF_INSERT) {
+            if (rangeStart < mention.end && rangeEnd > mention.start) {
+              _cachedMentions.removeAt(x);
+              continue;
+            }
+          } else if (difference.operation == DIFF_DELETE) {
+            if (rangeStart < mention.end && rangeEnd > mention.start) {
+              _cachedMentions.removeAt(x);
+              continue;
+            }
+          }
+        }
+
+        // Not overlapping but we inserted text in front of metions so we need to shift them
+        if (mention.start >= currentTextIndex && difference.operation == DIFF_INSERT) {
+          mention.start += difference.text.length;
+          mention.end += difference.text.length;
+        }
+        // Not overlapping but we removed text in front of metions so we need to shift them
+        if (mention.start >= currentTextIndex && difference.operation == DIFF_DELETE) {
+          mention.start -= difference.text.length;
+          mention.end -= difference.text.length;
         }
       }
 
-      // Not overlapping but we inserted text in front of metions so we need to shift them
-      if (mention.start > change.end && change.type == TextChangeType.Added) {
-        mention.start += change.changedText.length;
-        mention.end += change.changedText.length;
+      if (difference.operation == DIFF_EQUAL) {
+        currentTextIndex += difference.text.length;
       }
-      // Not overlapping but we removed text in front of metions so we need to shift them
-      if (mention.start > change.end && change.type == TextChangeType.Removed) {
-        mention.start -= change.changedText.length;
-        mention.end -= change.changedText.length;
+
+      if (difference.operation == DIFF_INSERT) {
+        currentTextIndex += difference.text.length;
+      }
+
+      if (difference.operation == DIFF_DELETE) {
+        currentTextIndex -= difference.text.length;
       }
     }
   }

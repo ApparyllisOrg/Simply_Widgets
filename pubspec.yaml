@@ -9,6 +9,7 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  diff_match_patch: ^0.4.1
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.3.0
