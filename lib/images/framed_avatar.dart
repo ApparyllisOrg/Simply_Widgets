@@ -24,6 +24,7 @@ class FramedAvatar extends StatelessWidget {
               cacheKey: url,
               width: size,
               height: size,
+              noneColor: Colors.black,
               cacheManager: cacheManager,
             ).padding(all: 3)));
   }

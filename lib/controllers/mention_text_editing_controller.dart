@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:diff_match_patch/diff_match_patch.dart';
 import 'package:flutter/widgets.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/widgets.dart';
 // Mention object that store the id, display name and avatarurl of the mention
 // You can inherit from this to add your own custom data, should you need to
 
-// Keep in copy with diff.dart
+// Keep in copy with diff.dart from diff_match_patch package
 const DIFF_DELETE = 1;
 const DIFF_INSERT = -1;
 const DIFF_EQUAL = 0;
@@ -81,10 +80,10 @@ class MentionTextEditingController extends TextEditingController {
   final List<MentionSyntax> mentionSyntaxes;
 
   // Delegate called when suggestion has changed
-  final Function(String?)? onSugggestionChanged;
+  final Function(MentionSyntax? syntax, String?)? onSugggestionChanged;
 
   // Function to get a mention from an id, used to deconstruct markup on construct
-  final MentionObject? Function(String) idToMentionObject;
+  final MentionObject? Function(BuildContext, String) idToMentionObject;
 
   // Background color of the text for the mention
   final Color mentionBgColor;
@@ -110,7 +109,7 @@ class MentionTextEditingController extends TextEditingController {
     super.dispose();
   }
 
-  void setMarkupText(String markupText) {
+  void setMarkupText(BuildContext context, String markupText) {
     String deconstructedText = '';
 
     int lastStartingRunStart = 0;
@@ -127,7 +126,7 @@ class MentionTextEditingController extends TextEditingController {
 
             final String matchedMarkup = match.input.substring(match.start, match.end);
             final String mentionId = match[3]!;
-            final MentionObject? mention = idToMentionObject(mentionId);
+            final MentionObject? mention = idToMentionObject(context, mentionId);
 
             final String mentionDisplayName = mention?.displayName ?? syntax.missingText;
 
@@ -164,6 +163,10 @@ class MentionTextEditingController extends TextEditingController {
     }
 
     return '';
+  }
+
+  MentionSyntax? getSearchSyntax() {
+    return _mentionSyntax;
   }
 
   String getMarkupText() {
@@ -283,7 +286,7 @@ class MentionTextEditingController extends TextEditingController {
     _mentionSyntax = null;
 
     if (onSugggestionChanged != null) {
-      onSugggestionChanged!(null);
+      onSugggestionChanged!(null, null);
     }
   }
 
@@ -304,7 +307,7 @@ class MentionTextEditingController extends TextEditingController {
             if (currentTextIndex <= _mentionStartingIndex! + _mentionLength! && currentTextIndex >= _mentionStartingIndex! + _mentionLength!) {
               _mentionLength = _mentionLength! + difference.text.length;
               if (onSugggestionChanged != null) {
-                onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+                onSugggestionChanged!(_mentionSyntax!, text.substring(_mentionStartingIndex!, _mentionStartingIndex! + _mentionLength!));
               }
             } else {
               _cancelMentioning();
@@ -335,11 +338,11 @@ class MentionTextEditingController extends TextEditingController {
             // If we no longer have text after our mention sign then hide suggestions until we start typing again
             if (_mentionLength == 1) {
               if (onSugggestionChanged != null) {
-                onSugggestionChanged!(null);
+                onSugggestionChanged!(null, null);
               }
             } else {
               if (onSugggestionChanged != null) {
-                onSugggestionChanged!(text.substring(currentTextIndex + 1, currentTextIndex + _mentionLength!));
+                onSugggestionChanged!(_mentionSyntax!, text.substring(_mentionStartingIndex!, _mentionStartingIndex! + _mentionLength!));
               }
             }
           }
