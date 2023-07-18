@@ -80,7 +80,7 @@ class MentionTextEditingController extends TextEditingController {
   final List<MentionSyntax> mentionSyntaxes;
 
   // Delegate called when suggestion has changed
-  final Function(MentionSyntax? syntax, String?)? onSugggestionChanged;
+  Function(MentionSyntax? syntax, String?)? onSugggestionChanged;
 
   // Function to get a mention from an id, used to deconstruct markup on construct
   final MentionObject? Function(BuildContext, String) idToMentionObject;
@@ -261,7 +261,7 @@ class MentionTextEditingController extends TextEditingController {
     final int mentionEnd = _mentionStartingIndex! + _mentionLength!;
     final String startChar = _mentionSyntax!.startingCharacter;
 
-    _cancelMentioning();
+    cancelMentioning();
 
     bGuardDeletion = true;
     text = text.replaceRange(mentionStart, mentionEnd, '$startChar${mention.displayName}');
@@ -280,7 +280,7 @@ class MentionTextEditingController extends TextEditingController {
     });
   }
 
-  void _cancelMentioning() {
+  void cancelMentioning() {
     _mentionStartingIndex = null;
     _mentionLength = null;
     _mentionSyntax = null;
@@ -302,7 +302,7 @@ class MentionTextEditingController extends TextEditingController {
         if (isMentioning()) {
           // Spaces are considered breakers for mentioning
           if (difference.text == " ") {
-            _cancelMentioning();
+            cancelMentioning();
           } else {
             if (currentTextIndex <= _mentionStartingIndex! + _mentionLength! && currentTextIndex >= _mentionStartingIndex! + _mentionLength!) {
               _mentionLength = _mentionLength! + difference.text.length;
@@ -310,7 +310,7 @@ class MentionTextEditingController extends TextEditingController {
                 onSugggestionChanged!(_mentionSyntax!, text.substring(_mentionStartingIndex!, _mentionStartingIndex! + _mentionLength!));
               }
             } else {
-              _cancelMentioning();
+              cancelMentioning();
             }
           }
         } else {
@@ -330,7 +330,7 @@ class MentionTextEditingController extends TextEditingController {
         if (isMentioning()) {
           // If we removed our startingCharacter, chancel mentioning
           if (difference.text == _mentionSyntax!.startingCharacter) {
-            _cancelMentioning();
+            cancelMentioning();
           } else {
             _mentionLength = _mentionLength! - difference.text.length;
             assert(_mentionLength! >= 0);
