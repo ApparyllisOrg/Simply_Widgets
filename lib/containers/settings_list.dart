@@ -77,8 +77,9 @@ class SettingsEntryToggle extends SettingListEntry {
 class SettingsDivider extends SettingListEntry {
   final String? title;
   final EdgeInsets padding;
+  final IconData? prefixIcon;
 
-  SettingsDivider({this.title, this.padding = const EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 20)});
+  SettingsDivider({this.title, this.padding = const EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 20), this.prefixIcon});
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
@@ -88,10 +89,18 @@ class SettingsDivider extends SettingListEntry {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title!,
-                style: TextStyle(fontSize: 15, color: Theme.of(context).highlightColor),
-              ),
+              Row(children: [
+                Visibility(
+                    child: Icon(
+                      prefixIcon,
+                      color: Theme.of(context).highlightColor,
+                    ).padding(right: 10),
+                    visible: prefixIcon != null),
+                Text(
+                  title!,
+                  style: TextStyle(fontSize: 15, color: Theme.of(context).highlightColor),
+                )
+              ]),
               Divider(),
             ],
           ));
