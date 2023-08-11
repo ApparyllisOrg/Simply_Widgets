@@ -5,27 +5,38 @@ import 'package:styled_widget/styled_widget.dart';
 
 class FramedAvatar extends StatelessWidget {
   const FramedAvatar(
-      {super.key, required this.size, required this.radius, this.frameColor = Colors.transparent, required this.url, required this.cacheManager});
+      {super.key,
+      required this.size,
+      required this.radius,
+      this.frameColor = Colors.transparent,
+      required this.url,
+      required this.cacheManager,
+      this.painter,
+      this.clipper});
 
   final double size;
   final double radius;
   final String url;
   final Color frameColor;
+  final CustomPainter? painter;
+  final CustomClipper<Path>? clipper;
   final CacheManager cacheManager;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: DecoratedBox(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(0), color: frameColor),
-            child: CachedImage(
-              url: url,
-              cacheKey: url,
-              width: size,
-              height: size,
-              noneColor: Colors.black,
-              cacheManager: cacheManager,
-            ).padding(all: 3)));
+    return DecoratedBox(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(0), color: frameColor),
+        child: CustomPaint(
+            painter: painter,
+            child: ClipPath(
+                clipper: clipper,
+                child: CachedImage(
+                  url: url,
+                  cacheKey: url,
+                  width: size,
+                  height: size,
+                  noneColor: const Color.fromARGB(255, 88, 88, 88),
+                  cacheManager: cacheManager,
+                ).padding(all: 3))));
   }
 }
