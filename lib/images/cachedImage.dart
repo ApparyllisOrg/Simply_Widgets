@@ -43,6 +43,11 @@ class _CachedImage extends State<CachedImage> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     getImage();
   }
 
