@@ -12,7 +12,8 @@ class FramedAvatar extends StatelessWidget {
       required this.url,
       required this.cacheManager,
       this.painter,
-      this.clipper});
+      this.clipper,
+      this.missingIcon = Icons.people});
 
   final double size;
   final double radius;
@@ -21,6 +22,7 @@ class FramedAvatar extends StatelessWidget {
   final CustomPainter? painter;
   final CustomClipper<Path>? clipper;
   final CacheManager cacheManager;
+  final IconData missingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +37,7 @@ class FramedAvatar extends StatelessWidget {
                   cacheKey: url,
                   width: size,
                   height: size,
+                  missingIcon: missingIcon,
                   noneColor: const Color.fromARGB(255, 88, 88, 88),
                   cacheManager: cacheManager,
                 ).padding(all: 3))));
