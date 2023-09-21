@@ -38,7 +38,7 @@ class FramedAvatar extends StatelessWidget {
                   width: size,
                   height: size,
                   missingIcon: missingIcon,
-                  noneColor: const Color.fromARGB(255, 88, 88, 88),
+                  noneColor: Colors.grey,
                   cacheManager: cacheManager,
                 ).padding(all: 3))));
   }
