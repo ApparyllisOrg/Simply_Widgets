@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:diff_match_patch/diff_match_patch.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 // Mention object that store the id, display name and avatarurl of the mention
@@ -153,8 +154,8 @@ class MentionTextEditingController extends TextEditingController {
     text = deconstructedText;
   }
 
-  TextSpan _createSpanForNonMatchingRange(int start, int end) {
-    return TextSpan(text: text.substring(start, end));
+  TextSpan _createSpanForNonMatchingRange(int start, int end, BuildContext context) {
+    return TextSpan(text: text.substring(start, end), style: Theme.of(context).textTheme.button);
   }
 
   String getSearchText() {
@@ -211,7 +212,7 @@ class MentionTextEditingController extends TextEditingController {
       final int indexToEndRegular = mention.start;
 
       if (indexToEndRegular != lastStartingRunStart) {
-        inlineSpans.add(_createSpanForNonMatchingRange(lastStartingRunStart, indexToEndRegular));
+        inlineSpans.add(_createSpanForNonMatchingRange(lastStartingRunStart, indexToEndRegular, context));
       }
 
       inlineSpans.add(
@@ -221,7 +222,7 @@ class MentionTextEditingController extends TextEditingController {
     }
 
     if (lastStartingRunStart < text.length) {
-      inlineSpans.add(_createSpanForNonMatchingRange(lastStartingRunStart, text.length));
+      inlineSpans.add(_createSpanForNonMatchingRange(lastStartingRunStart, text.length, context));
     }
 
     return TextSpan(children: inlineSpans);

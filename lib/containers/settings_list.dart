@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:simply_widgets/utils/style.dart';
+import 'package:styled_text/styled_text.dart' as st;
 import 'package:styled_widget/styled_widget.dart';
 
 abstract class SettingListEntry {
@@ -42,19 +44,28 @@ class SettingsEntryToggle extends SettingListEntry {
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
+    String useHint = hint!.replaceAll('\"', '&quot;');
+    useHint = useHint.replaceAll("'", '&apos;');
+
     Widget entryWidget = Row(
       children: [
         Expanded(
             child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: 14),
-            ).padding(bottom: 5),
-            Text(
-              hint,
+            GestureDetector(
+                onTap: () {
+                  setValue(!getValue());
+                  onChange();
+                },
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 14),
+                ).padding(bottom: 5)),
+            st.StyledText(
+              text: useHint,
               style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+              tags: styleTags(context),
             )
           ],
         )),
@@ -96,10 +107,11 @@ class SettingsDivider extends SettingListEntry {
                       color: Theme.of(context).highlightColor,
                     ).padding(right: 10),
                     visible: prefixIcon != null),
-                Text(
+                Expanded(
+                    child: Text(
                   title!,
                   style: TextStyle(fontSize: 15, color: Theme.of(context).highlightColor),
-                )
+                ))
               ]),
               Divider(),
             ],
