@@ -44,9 +44,6 @@ class SettingsEntryToggle extends SettingListEntry {
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
-    String useHint = hint!.replaceAll('\"', '&quot;');
-    useHint = useHint.replaceAll("'", '&apos;');
-
     Widget entryWidget = Row(
       children: [
         Expanded(
@@ -62,10 +59,9 @@ class SettingsEntryToggle extends SettingListEntry {
                   title,
                   style: TextStyle(fontSize: 14),
                 ).padding(bottom: 5)),
-            st.StyledText(
-              text: useHint,
+            Text(
+              hint,
               style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
-              tags: styleTags(context),
             )
           ],
         )),

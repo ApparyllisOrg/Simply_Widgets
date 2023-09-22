@@ -71,6 +71,7 @@ class MentionTextEditingController extends TextEditingController {
     this.onSugggestionChanged,
     required this.mentionBgColor,
     required this.mentionTextColor,
+    required this.mentionTextStyle,
     required this.idToMentionObject,
     super.text,
   }) {
@@ -96,6 +97,8 @@ class MentionTextEditingController extends TextEditingController {
   TextEditingController? controllerToCopyTo;
 
   final List<_TextMention> _cachedMentions = [];
+
+  final TextStyle mentionTextStyle;
 
   String _previousText = '';
 
@@ -215,8 +218,9 @@ class MentionTextEditingController extends TextEditingController {
         inlineSpans.add(_createSpanForNonMatchingRange(lastStartingRunStart, indexToEndRegular, context));
       }
 
-      inlineSpans.add(
-          TextSpan(text: text.substring(mention.start, mention.end), style: TextStyle(backgroundColor: mentionBgColor, color: mentionTextColor)));
+      inlineSpans.add(TextSpan(
+          text: text.substring(mention.start, mention.end),
+          style: mentionTextStyle.copyWith(backgroundColor: mentionBgColor, color: mentionTextColor)));
 
       lastStartingRunStart = mention.end;
     }
