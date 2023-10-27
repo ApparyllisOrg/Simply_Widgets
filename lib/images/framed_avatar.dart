@@ -12,11 +12,13 @@ class FramedAvatar extends StatelessWidget {
       required this.url,
       required this.cacheManager,
       this.painter,
+      this.imagePadding = 3,
       this.clipper,
       this.missingIcon = Icons.people});
 
   final double size;
   final double radius;
+  final double imagePadding;
   final String url;
   final Color frameColor;
   final CustomPainter? painter;
@@ -40,6 +42,6 @@ class FramedAvatar extends StatelessWidget {
                   missingIcon: missingIcon,
                   noneColor: Colors.grey,
                   cacheManager: cacheManager,
-                ).padding(all: 3))));
+                ).clipRRect(all: radius).padding(all: imagePadding))));
   }
 }
