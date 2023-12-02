@@ -118,6 +118,8 @@ class MentionTextEditingController extends TextEditingController {
 
     int lastStartingRunStart = 0;
 
+    _cachedMentions.clear();
+
     for (int i = 0; i < markupText.length; ++i) {
       final String character = markupText[i];
 
@@ -337,6 +339,14 @@ class MentionTextEditingController extends TextEditingController {
           if (difference.text == _mentionSyntax!.startingCharacter) {
             cancelMentioning();
           } else {
+            if (currentTextIndex < _mentionStartingIndex!) {
+              continue;
+            }
+
+            if (currentTextIndex > _mentionStartingIndex! + _mentionLength!) {
+              continue;
+            }
+
             _mentionLength = _mentionLength! - difference.text.length;
             assert(_mentionLength! >= 0);
 

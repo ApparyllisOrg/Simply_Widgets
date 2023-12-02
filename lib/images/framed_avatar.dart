@@ -33,15 +33,17 @@ class FramedAvatar extends StatelessWidget {
         child: CustomPaint(
             painter: painter,
             child: ClipPath(
-                clipper: clipper,
-                child: CachedImage(
-                  url: url,
-                  cacheKey: url,
-                  width: size,
-                  height: size,
-                  missingIcon: missingIcon,
-                  noneColor: Colors.grey,
-                  cacheManager: cacheManager,
-                ).clipRRect(all: radius).padding(all: imagePadding))));
+                    clipper: clipper,
+                    child: CachedImage(
+                      url: url,
+                      cacheKey: url,
+                      radius: 0,
+                      width: size,
+                      height: size,
+                      missingIcon: missingIcon,
+                      noneColor: Colors.grey,
+                      cacheManager: cacheManager,
+                    ).padding(all: imagePadding))
+                .clipRRect(all: radius)));
   }
 }

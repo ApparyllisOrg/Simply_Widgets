@@ -14,6 +14,7 @@ class CachedImage extends StatefulWidget {
       this.missingSize,
       this.missingIcon = Icons.person,
       this.onLoaded,
+      this.radius = 5,
       this.loadingText = 'Loading avatar',
       required this.cacheManager,
       this.loader = const CircularProgressIndicator()});
@@ -28,6 +29,7 @@ class CachedImage extends StatefulWidget {
   final String loadingText;
   final CacheManager cacheManager;
   final Widget loader;
+  final double radius;
 
   @override
   State<StatefulWidget> createState() => _CachedImage();
@@ -137,7 +139,7 @@ class _CachedImage extends State<CachedImage> {
     return _cachedFile == null
         ? SizedBox(width: widget.width, height: widget.height, child: getMissingIcon())
         : ClipRRect(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(widget.radius),
             child: Image.file(
               _cachedFile!,
               semanticLabel: '',
