@@ -5,18 +5,22 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: ">=2.19.6 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
+  diff_match_patch: ^0.4.1
   flutter:
     sdk: flutter
-  flutter_stripe: ^9.2.0
-  flutter_stripe_web: ^4.1.0
-  intl: ^0.18.1
+  flutter_cache_manager: ^3.3.0
+  flutter_markdown: ^0.6.14
+  intl: ^0.18.0
+  markdown: ^7.0.0
+  styled_text: ^4.0.0
   styled_widget: ^0.4.1
 
 dev_dependencies:
+  test: ^1.0.0
   flutter_test:
     sdk: flutter
 
