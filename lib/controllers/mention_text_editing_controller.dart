@@ -15,7 +15,7 @@ const DIFF_EQUAL = 0;
 class MentionObject {
   MentionObject({required this.id, required this.displayName, required this.avatarUrl});
 
-  // id of the mention, should match ^([a-zA-Z0-9]){1,}$
+  // id of the mention, should match the regex of your mention type, such as ^([a-zA-Z0-9]){1,}$,
   final String id;
   final String displayName;
   final String avatarUrl;
@@ -127,7 +127,7 @@ class MentionTextEditingController extends TextEditingController {
         if (character == syntax.prefix[0]) {
           final String subStr = markupText.substring(i, markupText.length);
           final RegExpMatch? match = syntax.getRegExp().firstMatch(subStr);
-          if (match != null) {
+          if (match != null && match.start == i) {
             deconstructedText += markupText.substring(lastStartingRunStart, i);
 
             final String matchedMarkup = match.input.substring(match.start, match.end);
