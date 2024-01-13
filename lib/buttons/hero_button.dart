@@ -8,7 +8,9 @@ class HeroButton extends StatefulWidget {
       required this.gradientA,
       required this.gradientB,
       required this.textColor,
-      required this.buttonColor});
+      required this.buttonColor,
+      required this.fontSize,
+      this.fontWeight = FontWeight.normal});
 
   final void Function() onPressed;
   final String text;
@@ -16,6 +18,8 @@ class HeroButton extends StatefulWidget {
   final Color gradientA;
   final Color gradientB;
   final Color textColor;
+  final double fontSize;
+  final FontWeight fontWeight;
 
   @override
   State<HeroButton> createState() => _HeroButtonState();
@@ -65,7 +69,10 @@ class _HeroButtonState extends State<HeroButton> {
                         : [widget.buttonColor, widget.buttonColor])),
             child: Text(
               widget.text,
-              style: TextStyle(color: widget.textColor),
+              style: TextStyle(
+                  color: widget.textColor,
+                  fontSize: widget.fontSize,
+                  fontWeight: widget.fontWeight),
             ),
             duration: Duration(milliseconds: 100),
           ),
