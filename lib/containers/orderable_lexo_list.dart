@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lexo_rank/lexoRank/lexoRankBucket.dart';
 import 'package:simply_widgets/buttons/drag_handle.dart';
 import 'package:simply_widgets/containers/reorderable_list_view.dart';
 import 'package:lexo_rank/lexo_rank.dart';
@@ -36,6 +37,60 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
     super.initState();
 
     _list = widget.data;
+  }
+
+  bool setup = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (setup)
+    {
+      return;
+    }
+
+    setup = true;
+
+    attemptReassign();
+  }
+
+  void attemptReassign()
+  {
+    WidgetsBinding.instance.addPostFrameCallback((_){
+
+      final List<String> foundRanks = [];
+
+      bool requiresReassignment = false;
+
+      for (int i = 0; i < _list.length; ++i)
+      {
+        final String rank =  widget.getRank(_list[i]);
+        if (foundRanks.contains(rank))
+        {
+            requiresReassignment = true;
+            break;
+        }
+        else 
+        {
+          foundRanks.add(rank);
+        }
+      }
+
+      if (requiresReassignment)
+      {
+        widget.updatedOrder(_list[0], LexoRank.min().format());
+        widget.updatedOrder(_list.last, LexoRank.max(LexoRankBucket.BUCKET_0).format());
+
+        for (int i = 1; i < _list.length - 1; ++i)
+          {
+            final String rank =  widget.getRank(_list[i - 1]);
+            final String lastRank =  widget.getRank(_list.last);
+            widget.updatedOrder(_list[i], LexoRank.parse(rank).between(LexoRank.parse(lastRank)).format());
+          }
+      }
+    });
+
   }
 
   void onOrderChanged(int oldIndex, int newIndex)
@@ -85,6 +140,8 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
     }
 
     widget.updatedOrder(movedBucket, newRank.format());
+
+    attemptReassign();
 
     setState(() {});
   }
