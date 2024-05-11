@@ -4,17 +4,7 @@ import 'package:simply_widgets/images/cachedImage.dart';
 import 'package:styled_widget/styled_widget.dart';
 
 class FramedAvatar extends StatelessWidget {
-  const FramedAvatar(
-      {super.key,
-      required this.size,
-      required this.radius,
-      this.frameColor = Colors.transparent,
-      required this.url,
-      required this.cacheManager,
-      this.painter,
-      this.imagePadding = 3,
-      this.clipper,
-      this.missingIcon = Icons.people});
+  const FramedAvatar({super.key, required this.size, required this.radius, this.frameColor = Colors.transparent, required this.url, required this.cacheManager, this.painter, this.imagePadding = 3, this.clipper, this.missingIcon = Icons.people});
 
   final double size;
   final double radius;
@@ -33,17 +23,16 @@ class FramedAvatar extends StatelessWidget {
         child: CustomPaint(
             painter: painter,
             child: ClipPath(
-                    clipper: clipper,
-                    child: CachedImage(
-                      url: url,
-                      cacheKey: url,
-                      radius: 0,
-                      width: size,
-                      height: size,
-                      missingIcon: missingIcon,
-                      noneColor: Colors.grey,
-                      cacheManager: cacheManager,
-                    ).padding(all: imagePadding))
-                .clipRRect(all: radius)));
+                clipper: clipper,
+                child: CachedImage(
+                  url: url,
+                  cacheKey: url,
+                  radius: 0,
+                  width: size,
+                  height: size,
+                  missingIcon: missingIcon,
+                  noneColor: Colors.grey,
+                  cacheManager: cacheManager,
+                )).padding(all: imagePadding).clipRRect(all: radius)));
   }
 }
