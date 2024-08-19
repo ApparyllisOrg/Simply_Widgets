@@ -7,15 +7,8 @@ import 'package:lexo_rank/lexo_rank.dart';
 typedef OrderableStringCallback<T> = String Function(T data);
 
 class OrderableLexoList<T> extends StatefulWidget {
-  
-  OrderableLexoList({
-  super.key, 
-  required this.getWidget,
-  required this.updatedOrder, 
-  required this.data, 
-  required this.getKey, 
-  required this.getRank
-  });
+  OrderableLexoList(
+      {super.key, required this.getWidget, required this.updatedOrder, required this.data, required this.getKey, required this.getRank});
 
   final List<T> data;
 
@@ -29,7 +22,6 @@ class OrderableLexoList<T> extends StatefulWidget {
 }
 
 class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
-
   late List<T> _list = [];
 
   @override
@@ -45,8 +37,7 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (setup)
-    {
+    if (setup) {
       return;
     }
 
@@ -55,87 +46,87 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
     attemptReassign();
   }
 
-  void attemptReassign()
-  {
-    WidgetsBinding.instance.addPostFrameCallback((_){
-
+  void attemptReassign() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final List<String> foundRanks = [];
 
       bool requiresReassignment = false;
 
-      for (int i = 0; i < _list.length; ++i)
-      {
-        final String rank =  widget.getRank(_list[i]);
-        if (foundRanks.contains(rank))
-        {
-            requiresReassignment = true;
-            break;
-        }
-        else 
-        {
+      for (int i = 0; i < _list.length; ++i) {
+        final String rank = widget.getRank(_list[i]);
+        if (foundRanks.contains(rank)) {
+          requiresReassignment = true;
+          break;
+        } else {
           foundRanks.add(rank);
         }
       }
 
-      if (requiresReassignment)
-      {
+      if (requiresReassignment) {
         widget.updatedOrder(_list[0], LexoRank.min().format());
         widget.updatedOrder(_list.last, LexoRank.max(LexoRankBucket.BUCKET_0).format());
 
-        for (int i = 1; i < _list.length - 1; ++i)
-          {
-            final String rank =  widget.getRank(_list[i - 1]);
-            final String lastRank =  widget.getRank(_list.last);
-            widget.updatedOrder(_list[i], LexoRank.parse(rank).between(LexoRank.parse(lastRank)).format());
+        for (int i = 1; i < _list.length - 1; ++i) {
+          final String rank = widget.getRank(_list[i - 1]);
+          final String lastRank = widget.getRank(_list.last);
+          String newRank = LexoRank.parse(rank).between(LexoRank.parse(lastRank)).format();
+
+          if (newRank == rank) {
+            newRank += "n";
           }
+
+          widget.updatedOrder(_list[i], newRank);
+        }
       }
     });
-
   }
 
-  void onOrderChanged(int oldIndex, int newIndex)
-  {
+  void onOrderChanged(int oldIndex, int newIndex) {
     if (newIndex > oldIndex) {
-        // Workaround https://github.com/flutter/flutter/issues/24786
-        newIndex--;
+      // Workaround https://github.com/flutter/flutter/issues/24786
+      newIndex--;
     }
 
     final T previousBucketAtLocation = _list[newIndex];
     final T movedBucket = _list[oldIndex];
 
+    final LexoRank previousBucketRank = LexoRank.parse(widget.getRank(previousBucketAtLocation));
+
     LexoRank newRank;
-    if (newIndex > oldIndex)
-    {
-      if (newIndex == _list.length - 1)
-      {
-        newRank = LexoRank.parse(widget.getRank(previousBucketAtLocation));
-        
-        final T previousPreviousBucketAtLocation = _list[newIndex-1];
-        final betweenLastRank = LexoRank.parse(widget.getRank(previousPreviousBucketAtLocation)).between(LexoRank.parse(widget.getRank(previousBucketAtLocation)));
+    if (newIndex > oldIndex) {
+      if (newIndex == _list.length - 1) {
+        newRank = previousBucketRank;
+
+        final T previousPreviousBucketAtLocation = _list[newIndex - 1];
+
+        final LexoRank previousPreviousBucketRank = LexoRank.parse(widget.getRank(previousPreviousBucketAtLocation));
+
+        LexoRank betweenLastRank = previousPreviousBucketRank.between(previousBucketRank);
+
+        if (previousPreviousBucketRank.format() == betweenLastRank.format()) {
+          betweenLastRank = LexoRank.parse(betweenLastRank.format() + 'n');
+        }
 
         widget.updatedOrder(previousBucketAtLocation, betweenLastRank.format());
+      } else {
+        final T previousNextBucketAtLocation = _list[newIndex + 1];
+        newRank = previousBucketRank.between(LexoRank.parse(widget.getRank(previousNextBucketAtLocation)));
       }
-      else 
-      {
-        final T previousNextBucketAtLocation = _list[newIndex+1];
-        newRank = LexoRank.parse(widget.getRank(previousBucketAtLocation)).between(LexoRank.parse(widget.getRank(previousNextBucketAtLocation)));
-      }
-    }
-    else 
-    {
-      if (newIndex == 0)
-      {
-        newRank = LexoRank.parse(widget.getRank(previousBucketAtLocation));
-        
-        final T previousNextBucketAtLocation = _list[newIndex+1];
-        final betweenLastRank = LexoRank.parse(widget.getRank(previousBucketAtLocation)).between(LexoRank.parse(widget.getRank(previousNextBucketAtLocation)));
+    } else {
+      if (newIndex == 0) {
+        newRank = previousBucketRank;
+
+        final T previousNextBucketAtLocation = _list[newIndex + 1];
+        LexoRank betweenLastRank = previousBucketRank.between(LexoRank.parse(widget.getRank(previousNextBucketAtLocation)));
+
+        if (previousBucketRank.format() == betweenLastRank.format()) {
+          betweenLastRank = LexoRank.parse(betweenLastRank.format() + 'n');
+        }
 
         widget.updatedOrder(previousBucketAtLocation, betweenLastRank.format());
-      }
-      else 
-      {
-        final T previousPreviousBucketAtLocation = _list[newIndex-1];
-        newRank = LexoRank.parse(widget.getRank(previousPreviousBucketAtLocation)).between(LexoRank.parse(widget.getRank(previousBucketAtLocation)));
+      } else {
+        final T previousPreviousBucketAtLocation = _list[newIndex - 1];
+        newRank = LexoRank.parse(widget.getRank(previousPreviousBucketAtLocation)).between(previousBucketRank);
       }
     }
 
@@ -146,7 +137,7 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
     setState(() {});
   }
 
-   Widget getProxyDecorator(Widget widget, int value, Animation<double> anim) {
+  Widget getProxyDecorator(Widget widget, int value, Animation<double> anim) {
     return DragHandle(widget: widget, value: value, anim: anim);
   }
 
@@ -157,10 +148,9 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
       proxyDecorator: getProxyDecorator,
       buildDefaultDragHandles: false,
       itemCount: _list.length,
-      itemBuilder: (context, index) => ReorderableDelayedDragStartListener(
-        key: Key(widget.getKey(_list[index])),
-        index: index,
-        child: widget.getWidget(_list[index])),
-      onReorder: onOrderChanged,);
+      itemBuilder: (context, index) =>
+          ReorderableDelayedDragStartListener(key: Key(widget.getKey(_list[index])), index: index, child: widget.getWidget(_list[index])),
+      onReorder: onOrderChanged,
+    );
   }
 }
