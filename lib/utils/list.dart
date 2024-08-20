@@ -5,3 +5,11 @@ T? firstWhereSafe<T>(List<T> list, bool Function(T) test) {
   }
   return null;
 }
+
+extension ListExtension<T> on List<T> {
+  void addUnique(T object) {
+    if (!contains(object)) {
+      add(object);
+    }
+  }
+}
