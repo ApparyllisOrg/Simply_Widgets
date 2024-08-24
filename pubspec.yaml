@@ -18,7 +18,6 @@ dependencies:
     markdown: ^7.0.0
     styled_text: ^8.1.0
     styled_widget: ^0.4.1
-    lexo_rank: ^0.0.11
 
 dev_dependencies:
     test: ^1.0.0
