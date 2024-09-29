@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:simply_widgets/buttons/drag_handle.dart';
 import 'package:simply_widgets/containers/reorderable_list_view.dart';
 import 'package:simply_widgets/utils/simplified_lexo.dart';
+
 typedef OrderableStringCallback<T> = String Function(T data);
 
 class OrderableLexoList<T> extends StatefulWidget {
@@ -52,6 +53,12 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
 
       for (int i = 0; i < _list.length; ++i) {
         final String rank = widget.getRank(_list[i]);
+
+        // If we have a long rank, rebalance everything, we shouldn't reach this unless people have 100s of orderable items, in which case we can make this smarter.
+        if (rank.length > 10) {
+          requiresReassignment = true;
+          break;
+        }
         if (foundRanks.contains(rank)) {
           requiresReassignment = true;
           break;
@@ -60,7 +67,7 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
         }
       }
 
-      _list.sort((a, b)=> widget.getRank(a).compareTo(widget.getRank(b)));
+      _list.sort((a, b) => widget.getRank(a).compareTo(widget.getRank(b)));
 
       if (requiresReassignment) {
         List<SimplyLexo> lexoItems = [];
