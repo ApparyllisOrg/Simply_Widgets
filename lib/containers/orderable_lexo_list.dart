@@ -42,42 +42,20 @@ class OrderableLexoListState<T> extends State<OrderableLexoList<T>> {
 
     setup = true;
 
-    attemptReassign();
+    rebalance();
   }
 
-  void attemptReassign() {
+  void rebalance() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final List<String> foundRanks = [];
-
-      bool requiresReassignment = false;
-
-      for (int i = 0; i < _list.length; ++i) {
-        final String rank = widget.getRank(_list[i]);
-
-        // If we have a long rank, rebalance everything, we shouldn't reach this unless people have 100s of orderable items, in which case we can make this smarter.
-        if (rank.length > 10) {
-          requiresReassignment = true;
-          break;
-        }
-        if (foundRanks.contains(rank)) {
-          requiresReassignment = true;
-          break;
-        } else {
-          foundRanks.add(rank);
-        }
-      }
-
       _list.sort((a, b) => widget.getRank(a).compareTo(widget.getRank(b)));
 
-      if (requiresReassignment) {
-        List<SimplyLexo> lexoItems = [];
+      List<SimplyLexo> lexoItems = [];
 
-        _list.forEach((item) => lexoItems.add(SimplyLexo(widget.getRank(item), id: widget.getKey(item))));
+      _list.forEach((item) => lexoItems.add(SimplyLexo(widget.getRank(item), id: widget.getKey(item))));
 
-        List<SimplyLexo> balancedLexoItems = SimplyLexo.balance(lexoItems);
+      List<SimplyLexo> balancedLexoItems = SimplyLexo.balance(lexoItems);
 
-        balancedLexoItems.forEach((item) => widget.updatedOrder(_list.firstWhere((test) => widget.getKey(test) == item.id), item.getFullRank()));
-      }
+      balancedLexoItems.forEach((item) => widget.updatedOrder(_list.firstWhere((test) => widget.getKey(test) == item.id), item.getFullRank()));
     });
   }
 
