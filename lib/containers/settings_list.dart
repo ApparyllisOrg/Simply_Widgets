@@ -44,8 +44,7 @@ class SettingsEntryToggle extends SettingListEntry {
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
-
-   String useMsg = hint.replaceAll('\"', '&quot;');
+    String useMsg = hint.replaceAll('\"', '&quot;');
     useMsg = useMsg.replaceAll("'", '&apos;');
 
     Widget entryWidget = Row(
@@ -63,7 +62,7 @@ class SettingsEntryToggle extends SettingListEntry {
                   title,
                   style: TextStyle(fontSize: 14),
                 ).padding(bottom: 5)),
-           st.StyledText(
+            st.StyledText(
               text: useMsg,
               tags: styleTags(context),
               style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
@@ -91,7 +90,8 @@ class SettingsDivider extends SettingListEntry {
   final EdgeInsets padding;
   final IconData? prefixIcon;
 
-  SettingsDivider({this.title, this.padding = const EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 20), this.prefixIcon});
+  SettingsDivider({this.title, this.padding = const EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 20), this.prefixIcon, super.isEnabled})
+      : super();
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
