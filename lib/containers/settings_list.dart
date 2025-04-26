@@ -29,46 +29,55 @@ class SettingsEntryCustom extends SettingListEntry {
 
 class SettingsEntryToggle extends SettingListEntry {
   final String title;
-  final String hint;
+  final String? hint;
   final bool Function() getValue;
   final void Function(bool) setValue;
   final EdgeInsets padding;
 
   SettingsEntryToggle(
-      {required this.title,
-      required this.hint,
-      required this.getValue,
-      required this.setValue,
-      this.padding = const EdgeInsets.all(20),
-      super.isEnabled});
+      {required this.title, this.hint, required this.getValue, required this.setValue, this.padding = const EdgeInsets.all(20), super.isEnabled});
 
   @override
   Widget createWidget(BuildContext context, void Function() onChange) {
-    String useMsg = hint.replaceAll('\"', '&quot;');
-    useMsg = useMsg.replaceAll("'", '&apos;');
+    Widget textContent;
 
-    Widget entryWidget = Row(
-      children: [
-        Expanded(
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-                onTap: () {
-                  setValue(!getValue());
-                  onChange();
-                },
-                child: Text(
-                  title,
-                  style: TextStyle(fontSize: 14),
-                ).padding(bottom: 5)),
+    if (hint != null) {
+      String useMsg = hint!.replaceAll('\"', '&quot;');
+      useMsg = useMsg.replaceAll("'", '&apos;');
+
+      textContent = GestureDetector(
+          onTap: () {
+            setValue(!getValue());
+            onChange();
+          },
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+              title,
+              style: TextStyle(fontSize: 14),
+            ).padding(bottom: 5),
             st.StyledText(
               text: useMsg,
               tags: styleTags(context),
               style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
             )
-          ],
-        )),
+          ]));
+    } else {
+      textContent = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        GestureDetector(
+            onTap: () {
+              setValue(!getValue());
+              onChange();
+            },
+            child: Text(
+              title,
+              style: TextStyle(fontSize: 14),
+            ).padding(bottom: 5))
+      ]);
+    }
+
+    Widget entryWidget = Row(
+      children: [
+        Expanded(child: textContent),
         Switch(
             value: getValue(),
             activeColor: Theme.of(context).highlightColor,
